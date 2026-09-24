@@ -38,26 +38,23 @@ bash ./setup.sh
 - **유틸리티**: Scroll Reverser, Rectangle, Raycast
 - **개발 도구**:
   - Visual Studio Code
-  - IntelliJ IDEA Ultimate (유료)
-  - PyCharm Professional (유료)
   - Docker Desktop
   - Postman
   - Warp
-  - Ghostty, cmux (터미널)
+  - Ghostty (터미널)
 - **키 매핑**: Karabiner-Elements
-- **글꼴**: JetBrains Mono
 
 ### Dock 고정
 
 다음 앱들이 자동으로 Dock에 고정됩니다:
 
 - Google Chrome, Figma, Slack, Notion, Obsidian
-- Visual Studio Code, IntelliJ IDEA, PyCharm
+- Visual Studio Code
 - Docker, Postman, Warp, Ghostty
 
 ### 터미널 설정
 
-tmux, Ghostty, Karabiner 설정과 cmux 연동을 `dotfiles/install.sh`로 설치하고,
+tmux, Ghostty, Karabiner 설정을 `dotfiles/install.sh`로 설치하고,
 크롬 확장 `chrome-tmux-tabs`를 함께 둡니다. 단축키와 수동 단계는
 [`TERMINAL.md`](TERMINAL.md)에 정리되어 있습니다.
 

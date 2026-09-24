@@ -113,15 +113,11 @@ CASKS=(
   "rectangle"
   "raycast"
   "visual-studio-code"
-  "intellij-idea"   # Ultimate(유료)
-  "pycharm"         # Professional(유료)
   "docker"          # Docker Desktop
   "postman"
   "warp"
   "ghostty"
-  "cmux"
   "karabiner-elements"
-  "font-jetbrains-mono"
 )
 
 echo
@@ -154,8 +150,6 @@ DOCK_APPS=(
   "/Applications/Notion.app"
   "/Applications/Obsidian.app"
   "/Applications/Visual Studio Code.app"
-  "/Applications/IntelliJ IDEA.app"
-  "/Applications/PyCharm.app"
   "/Applications/Docker.app"
   "/Applications/Postman.app"
   "/Applications/Warp.app"
@@ -611,7 +605,7 @@ fi
 echo "✅ Claude Code 설정 완료"
 
 # ---------------------------
-# 터미널 설정 (tmux, Ghostty, Karabiner, cmux 연동)
+# 터미널 설정 (tmux, Ghostty, Karabiner)
 # ---------------------------
 echo
 echo "=============================="
@@ -638,7 +632,7 @@ echo
 echo "=============================="
 echo "✅ 전체 작업 완료"
 echo "   - CLI: git, python@3.13, node, fzf, tmux, gh"
-echo "   - GUI: Chrome, Figma, Slack, Notion, Obsidian, VSCode, JetBrains, Docker, Postman, Warp, Ghostty, cmux"
-echo "   - 설정: Oh My Tmux, Ghostty, Karabiner, cmux, Claude Code, zshrc 앨리어스"
+echo "   - GUI: Chrome, Figma, Slack, Notion, Obsidian, VSCode, Docker, Postman, Warp, Ghostty"
+echo "   - 설정: Oh My Tmux, Ghostty, Karabiner, Claude Code, zshrc 앨리어스"
 echo "   - 수동 설치 필요: omc 플러그인, Bear 노트 (README.md 참고)"
 echo "=============================="

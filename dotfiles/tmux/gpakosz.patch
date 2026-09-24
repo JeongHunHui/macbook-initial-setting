@@ -13,12 +13,8 @@ index 986ea96..38f9001 100644
  
  set -q -g status-utf8 on                  # expect UTF-8 (tmux < 2.2)
  setw -q -g utf8 on
-@@ -1888,3 +1888,8 @@ run 'cut -c3- "$TMUX_CONF" | sh -s _apply_configuration'
+@@ -1888,3 +1888,4 @@ run 'cut -c3- "$TMUX_CONF" | sh -s _apply_configuration'
  # }
  #
  # "$@"
 +set -g mouse on
-+
-+# cmux <-> tmux auto-sync
-+set-hook -g after-new-session 'run-shell "cmux-tmux sync > /dev/null 2>&1 &"'
-+set-hook -g session-closed 'run-shell "cmux-tmux clean > /dev/null 2>&1 &"'

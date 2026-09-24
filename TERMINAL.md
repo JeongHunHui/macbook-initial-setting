@@ -12,15 +12,14 @@ bash ./dotfiles/install.sh
 
 | 경로 | 설치 위치 | 내용 |
 |------|-----------|------|
-| `dotfiles/tmux/gpakosz.patch` | `~/.tmux/.tmux.conf` | [gpakosz/.tmux](https://github.com/gpakosz/.tmux) 를 커밋 `87dcd13` 에 고정해 받은 뒤 붙이는 수정. 보조 prefix `C-a` 끄기, 마우스 켜기, cmux 동기화 훅 |
+| `dotfiles/tmux/gpakosz.patch` | `~/.tmux/.tmux.conf` | [gpakosz/.tmux](https://github.com/gpakosz/.tmux) 를 커밋 `87dcd13` 에 고정해 받은 뒤 붙이는 수정. 보조 prefix `C-a` 끄기, 마우스 켜기 |
 | `dotfiles/tmux/tmux.conf.local` | `~/.tmux.conf.local` | 단축키, 상태 표시줄, 플러그인 설정 |
 | `dotfiles/tmux/claude-usage.sh` | `~/.tmux/` | 상태 표시줄 오른쪽에 Claude, Codex 사용량 표시. 토큰은 키체인에서 읽는다 |
 | `dotfiles/tmux/resurrect-cleanup.sh` | `~/.tmux/` | tmux-resurrect 스냅샷을 최신 10개만 남긴다 |
 | `dotfiles/tmux/com.user.tmux-resurrect-cleanup.plist` | `~/Library/LaunchAgents/` | 위 정리 스크립트를 1분마다 돌리는 LaunchAgent |
-| `dotfiles/ghostty/config` | `~/.config/ghostty/config` | 왼쪽 Option 을 Alt 로, JetBrains Mono, 시작 폴더 `~/Projects` |
+| `dotfiles/ghostty/config` | `~/.config/ghostty/config` | 왼쪽 Option 을 Alt 로 사용하고 시작 폴더를 `~/Projects`로 지정 |
 | `dotfiles/karabiner/karabiner.json` | `~/.config/karabiner/karabiner.json` | 키 매핑 전체 |
-| `dotfiles/bin/cmux-tmux` | `~/.local/bin/cmux-tmux` | tmux 세션과 cmux 워크스페이스를 맞추는 스크립트 |
-| `dotfiles/zsh/tmux.zsh` | `~/.config/zsh/tmux.zsh` | `t`, `t0` 별칭과 cmux 시작 시 동기화. `.zshrc` 에 source 한 줄이 붙는다 |
+| `dotfiles/zsh/tmux.zsh` | `~/.config/zsh/tmux.zsh` | `t`, `t0` 별칭. `.zshrc` 에 source 한 줄이 붙는다 |
 | `chrome-tmux-tabs/` | 수동 설치 | tmux 처럼 크롬 탭을 다루는 확장 |
 
 ## tmux

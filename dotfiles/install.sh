@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 터미널 설정(tmux, Ghostty, Karabiner, cmux 연동)을 홈 디렉터리에 설치한다.
+# 터미널 설정(tmux, Ghostty, Karabiner)을 홈 디렉터리에 설치한다.
 # 기존 파일이 있으면 .bak-<시각> 으로 옮겨 두고 덮어쓴다.
 set -euo pipefail
 DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -41,9 +41,6 @@ mkdir -p "$HOME/Projects"
 echo "⌨️  Karabiner"
 put "$DIR/karabiner/karabiner.json" "$HOME/.config/karabiner/karabiner.json"
 
-echo "🔗 cmux 연동"
-put "$DIR/bin/cmux-tmux" "$HOME/.local/bin/cmux-tmux"
-chmod +x "$HOME/.local/bin/cmux-tmux"
 put "$DIR/zsh/tmux.zsh" "$HOME/.config/zsh/tmux.zsh"
 LINE='[ -f ~/.config/zsh/tmux.zsh ] && source ~/.config/zsh/tmux.zsh'
 grep -qxF "$LINE" "$HOME/.zshrc" 2>/dev/null || echo "$LINE" >> "$HOME/.zshrc"

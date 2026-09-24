@@ -50,4 +50,4 @@ bash ./mac-mini-openclaw-setup.sh
 ## Install Targets
 
 - **CLI (formula)**: git, python@3.13, node, fzf, tmux, gh
-- **GUI (cask)**: google-chrome, figma, slack, notion, obsidian, scroll-reverser, rectangle, raycast, visual-studio-code, intellij-idea, pycharm, docker, postman, warp, ghostty, cmux, karabiner-elements, font-jetbrains-mono
+- **GUI (cask)**: google-chrome, figma, slack, notion, obsidian, scroll-reverser, rectangle, raycast, visual-studio-code, docker, postman, warp, ghostty, karabiner-elements
