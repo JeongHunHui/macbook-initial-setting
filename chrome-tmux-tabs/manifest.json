@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "tmux-tabs",
+  "version": "0.7",
+  "description": "탭/그룹/창 조작. 자동 접기 상시. 기본키 4개 외는 chrome://extensions/shortcuts 에서 지정.",
+  "permissions": ["tabs", "tabGroups", "system.display", "sessions", "storage"],
+  "background": { "service_worker": "sw.js" },
+  "commands": {
+    "next_tab":   { "suggested_key": { "mac": "Alt+F", "default": "Alt+F" }, "description": "탭: 다음 탭" },
+    "prev_tab":   { "suggested_key": { "mac": "Alt+D", "default": "Alt+D" }, "description": "탭: 이전 탭" },
+    "break_pane": { "suggested_key": { "mac": "Alt+A", "default": "Alt+A" }, "description": "탭: 현재 탭을 새 창으로 분리" },
+    "tile_even":  { "suggested_key": { "mac": "Alt+1", "default": "Alt+1" }, "description": "창: 모든 창 균등 너비 타일" },
+
+    "tab_back":         { "description": "탭: 방문 히스토리 뒤로 (⌥O 권장)" },
+    "tab_forward":      { "description": "탭: 방문 히스토리 앞으로 (⌥P 권장)" },
+    "close_and_reopen": { "description": "탭: 닫고 새로 열기 (⌥B 권장)" },
+    "toggle_left_width":{ "description": "창: 좌측 폭 넓게/좁게 토글" },
+    "duplicate_tab":   { "description": "탭: 복제" },
+    "reopen_closed":   { "description": "탭: 닫은 탭 다시 열기" },
+    "group_with_name": { "description": "그룹: 이름 입력해서 그룹 만들기/이름변경" },
+    "new_tab_in_group":{ "description": "그룹: 현재 그룹 안에 새 탭 열기" },
+    "collapse_all":    { "description": "그룹: 모든 그룹 접기" }
+  }
+}

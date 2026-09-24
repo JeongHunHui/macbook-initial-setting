@@ -1,0 +1,6 @@
+macos-option-as-alt = left
+font-family = JetBrains Mono
+font-family-bold = JetBrains Mono Bold
+mouse-scroll-multiplier = 0.5
+link-url = true
+working-directory = __HOME__/Projects
