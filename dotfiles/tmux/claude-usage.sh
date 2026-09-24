@@ -132,15 +132,33 @@ def is_codex_pane():
         return False
 
 def format_codex_rate_limits(rate_limits):
-    primary = rate_limits.get("primary", {}) or {}
-    secondary = rate_limits.get("secondary", {}) or {}
-    f5 = max(0, int(primary.get("used_percent", 0) or 0))
-    wk = max(0, int(secondary.get("used_percent", 0) or 0))
-    r5 = fmt_remaining(primary.get("resets_at", ""))
-    rw = fmt_remaining(secondary.get("resets_at", ""))
-    p5 = f"({r5})" if r5 else ""
-    pw = f"({rw})" if rw else ""
-    return f"#[fg=#8a8a8a]codex {color(f5)}5h:{f5}%{p5} {color(wk)}wk:{wk}%{pw}#[fg=#8a8a8a]"
+    window_list = [
+        rate_limits.get("primary", {}) or {},
+        rate_limits.get("secondary", {}) or {},
+    ]
+
+    def find_window(target_minutes):
+        return next(
+            (window for window in window_list
+             if int(window.get("window_minutes", 0) or 0) == target_minutes),
+            None,
+        )
+
+    def format_window(label, window):
+        if not window:
+            return f"#[fg=#585858]{label}:-"
+        used = max(0, int(window.get("used_percent", 0) or 0))
+        remaining = fmt_remaining(window.get("resets_at", ""))
+        reset = f"({remaining})" if remaining else ""
+        return f"{color(used)}{label}:{used}%{reset}"
+
+    five_hour = find_window(300)
+    weekly = find_window(10080)
+    return (
+        "#[fg=#8a8a8a]codex "
+        f"{format_window('5h', five_hour)} {format_window('wk', weekly)}"
+        "#[fg=#8a8a8a]"
+    )
 
 def find_codex_rate_limits():
     try:
