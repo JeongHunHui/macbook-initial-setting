@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Mac Init · 선택 설치</title>
+  <style>
+    :root{color-scheme:dark;--bg:#0b0d10;--card:#15191f;--line:#29313a;--text:#eef2f6;--muted:#9ba7b4;--accent:#68d391;--blue:#63b3ed}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 80% 0,#182631 0,transparent 36%),var(--bg);font:15px/1.55 ui-sans-serif,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;color:var(--text)}
+    main{max-width:1060px;margin:auto;padding:52px 24px 80px}h1{font-size:42px;letter-spacing:-1.5px;margin:0 0 8px}h2{font-size:20px;margin:0 0 18px}.lead{color:var(--muted);font-size:17px;margin:0 0 34px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}.card{display:block;border:1px solid var(--line);border-radius:14px;padding:18px;background:color-mix(in srgb,var(--card) 92%,transparent);cursor:pointer}.card:hover{border-color:#465563}.card input{accent-color:var(--accent);width:18px;height:18px;vertical-align:-3px;margin-right:9px}.name{font-weight:700;font-size:17px}.desc{display:block;color:var(--muted);margin:7px 0 0 31px}.panel{margin-top:28px;border:1px solid var(--line);border-radius:16px;background:var(--card);padding:22px}.tabs{display:flex;gap:8px;margin-bottom:14px}.tabs button,button.copy{border:1px solid var(--line);border-radius:9px;background:#20262d;color:var(--text);padding:9px 13px;cursor:pointer}.tabs button.active{background:var(--blue);color:#071018;border-color:transparent;font-weight:700}pre{white-space:pre-wrap;word-break:break-word;background:#080a0d;border-radius:10px;padding:17px;min-height:80px;color:#d9e2ec;overflow:auto}.actions{display:flex;justify-content:space-between;align-items:center;gap:16px}.hint{color:var(--muted)}.manual li{margin:8px 0}.badge{display:inline-block;color:#09120c;background:var(--accent);font-size:12px;font-weight:800;padding:3px 8px;border-radius:999px;margin-left:8px}a{color:#8bc8f2}
+  </style>
+</head>
+<body><main>
+  <h1>Mac Init <span class="badge">선택 설치</span></h1>
+  <p class="lead">설치할 영역을 고르면 바로 실행할 명령과 에이전트용 프롬프트를 생성합니다.</p>
+  <section class="grid" id="modules">
+    <label class="card"><input type="checkbox" value="system" checked><span class="name">macOS 시스템</span><span class="desc">Dock, 트랙패드, 부팅음과 기본 입력 설정</span></label>
+    <label class="card"><input type="checkbox" value="cli" checked><span class="name">CLI 개발 도구</span><span class="desc">Git, Python, Node.js, tmux와 Homebrew</span></label>
+    <label class="card"><input type="checkbox" value="apps"><span class="name">개발 앱 전체</span><span class="desc">브라우저, IDE, Docker, 생산성 앱</span></label>
+    <label class="card"><input type="checkbox" value="dock"><span class="name">Dock 구성</span><span class="desc">설치된 주요 앱을 Dock 오른쪽에 고정</span></label>
+    <label class="card"><input type="checkbox" value="terminal" checked><span class="name">터미널 환경</span><span class="desc">tmux, Ghostty, Karabiner, cmux, 클립보드</span></label>
+    <label class="card"><input type="checkbox" value="codex" checked><span class="name">Codex CLI</span><span class="desc">한글 입력, Enter/Shift+Enter, 세션 alias, VS Code</span></label>
+    <label class="card"><input type="checkbox" value="common" checked><span class="name">공통 개인 설정</span><span class="desc">fzf, pyenv, Git alias, Rectangle, Raycast 등</span></label>
+  </section>
+
+  <section class="panel">
+    <div class="tabs"><button data-view="command" class="active">실행 명령</button><button data-view="prompt">에이전트 프롬프트</button></div>
+    <pre id="output"></pre>
+    <div class="actions"><span class="hint" id="summary"></span><button class="copy" id="copy">클립보드에 복사</button></div>
+  </section>
+
+  <section class="panel manual">
+    <h2>설치 후 직접 해야 하는 일</h2>
+    <ol>
+      <li>Karabiner의 입력 모니터링·손쉬운 사용·시스템 확장 권한을 허용합니다.</li>
+      <li>한국어 2벌식 입력기를 추가하고 F18을 입력 소스 전환으로 지정합니다.</li>
+      <li><code>gh auth login</code>과 Codex 로그인을 완료합니다.</li>
+      <li>Ghostty를 재실행한 뒤 tmux와 Option+D/F, pane 선택·복사를 확인합니다.</li>
+      <li>필요하면 Chrome에서 <code>chrome-tmux-tabs</code>를 압축 해제 확장으로 로드합니다.</li>
+    </ol>
+    <p><a href="MANUAL-CHECKLIST.md">전체 수동 체크리스트 보기</a></p>
+  </section>
+
+  <script>
+    const boxes=[...document.querySelectorAll('input[type=checkbox]')], out=document.querySelector('#output'), summary=document.querySelector('#summary');
+    let view='command';
+    const selected=()=>boxes.filter(x=>x.checked).map(x=>x.value);
+    function render(){const mods=selected().join(',');summary.textContent=`${selected().length}개 모듈 선택 · ${mods||'선택 없음'}`;
+      out.textContent=view==='command'
+        ? `cd /path/to/macbook-initial-setting\nMAC_INIT_MODULES="${mods}" bash ./setup.sh`
+        : `이 폴더는 macbook-initial-setting 패키지다. README.md, TERMINAL.md, MANUAL-CHECKLIST.md와 설치 스크립트를 먼저 읽어라.\n\n선택 모듈: ${mods}\n\n현재 Mac을 읽기 전용으로 먼저 점검하고, 이미 설치된 항목은 건너뛴 뒤 MAC_INIT_MODULES="${mods}" bash ./setup.sh 로 선택한 모듈만 설치해라. 기존 설정은 백업하고 인증정보를 출력하거나 덮어쓰지 마라. 관리자 암호, macOS 개인정보 권한, 시스템 확장, OAuth와 계정 로그인은 우회하지 말고 내가 직접 할 메뉴 경로를 알려라. 마지막에는 자동 완료/수동 필요/실패·보류로 나눠 실제 검증 결과를 보고해라.`;
+    }
+    boxes.forEach(x=>x.addEventListener('change',render));document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{view=b.dataset.view;document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x===b));render()});
+    document.querySelector('#copy').onclick=async()=>{await navigator.clipboard.writeText(out.textContent);document.querySelector('#copy').textContent='복사됨';setTimeout(()=>document.querySelector('#copy').textContent='클립보드에 복사',1200)};render();
+  </script>
+</main></body></html>

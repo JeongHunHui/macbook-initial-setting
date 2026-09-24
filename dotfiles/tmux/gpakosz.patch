@@ -1,0 +1,24 @@
+diff --git a/.tmux.conf b/.tmux.conf
+index 986ea96..38f9001 100644
+--- a/.tmux.conf
++++ b/.tmux.conf
+@@ -23,8 +23,8 @@ set -s escape-time 10                     # faster command sequences
+ set -sg repeat-time 600                   # increase repeat timeout
+ set -s focus-events on
+ 
+-set -g prefix2 C-a                        # GNU-Screen compatible prefix
+-bind C-a send-prefix -2
++# set -g prefix2 C-a                        # GNU-Screen compatible prefix
++# bind C-a send-prefix -2
+ 
+ set -q -g status-utf8 on                  # expect UTF-8 (tmux < 2.2)
+ setw -q -g utf8 on
+@@ -1888,3 +1888,8 @@ run 'cut -c3- "$TMUX_CONF" | sh -s _apply_configuration'
+ # }
+ #
+ # "$@"
++set -g mouse on
++
++# cmux <-> tmux auto-sync
++set-hook -g after-new-session 'run-shell "cmux-tmux sync > /dev/null 2>&1 &"'
++set-hook -g session-closed 'run-shell "cmux-tmux clean > /dev/null 2>&1 &"'

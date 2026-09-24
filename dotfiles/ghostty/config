@@ -1,0 +1,9 @@
+macos-option-as-alt = left
+mouse-scroll-multiplier = 0.5
+link-url = true
+working-directory = __HOME__/Projects
+keybind = shift+enter=csi:13;2u
+keybind = alt+arrow_left=unbind
+keybind = alt+arrow_right=unbind
+keybind = alt+arrow_up=unbind
+keybind = alt+arrow_down=unbind

@@ -1,0 +1,106 @@
+#!/usr/bin/env zsh
+# cmux-tmux: cmux <-> tmux session sync
+# Each tmux session becomes a cmux workspace
+
+export PATH="/Applications/cmux.app/Contents/Resources/bin:$PATH"
+DEFAULT_CWD="__HOME__/Projects"
+LOCK_FILE="/tmp/cmux-tmux.lock"
+
+usage() {
+  cat <<'EOF'
+Usage: cmux-tmux <command> [args]
+
+Commands:
+  sync          Sync tmux sessions → cmux workspaces
+  new <name>    Create new tmux session + cmux workspace
+  list          Show mapping
+  clean         Close orphaned workspaces
+EOF
+}
+
+acquire_lock() {
+  if [[ -f "$LOCK_FILE" ]]; then
+    local lock_pid
+    lock_pid=$(cat "$LOCK_FILE" 2>/dev/null)
+    if kill -0 "$lock_pid" 2>/dev/null; then
+      exit 0
+    fi
+  fi
+  echo $$ > "$LOCK_FILE"
+  trap 'rm -f "$LOCK_FILE"' EXIT
+}
+
+cmd_sync() {
+  acquire_lock
+
+  # 1) Collect old tmux:* workspace refs
+  local -a old_refs
+  old_refs=()
+  local line ref
+  while IFS= read -r line; do
+    ref=$(echo "$line" | awk '{print $1}' | tr -d '* ')
+    old_refs+=("$ref")
+  done < <(cmux list-workspaces 2>/dev/null | grep "tmux:")
+
+  # 2) Create fresh workspace per tmux session
+  local -a new_refs
+  new_refs=()
+  local session ws
+  for session in $(tmux list-sessions -F '#{session_name}' 2>/dev/null); do
+    ws=$(cmux new-workspace --cwd "$DEFAULT_CWD" --command "tmux attach -t ${session}" 2>&1 | awk '{print $2}')
+    if [[ -n "$ws" ]]; then
+      cmux rename-workspace --workspace "$ws" "tmux:${session}" 2>/dev/null
+      new_refs+=("$ws")
+    fi
+  done
+
+  # 3) Close old ones (new ones already exist, cmux won't die)
+  for ref in "${old_refs[@]}"; do
+    cmux close-workspace --workspace "$ref" 2>/dev/null || true
+  done
+}
+
+cmd_new() {
+  local name="${1:?Usage: cmux-tmux new <name>}"
+  local cwd="${2:-$DEFAULT_CWD}"
+
+  tmux has-session -t "$name" 2>/dev/null || tmux new-session -d -s "$name" -c "$cwd"
+
+  if cmux list-workspaces 2>/dev/null | grep -q "tmux:${name}"; then
+    echo "Already exists: tmux:${name}"
+    return
+  fi
+
+  local ws
+  ws=$(cmux new-workspace --cwd "$cwd" --command "tmux attach -t ${name}" 2>&1 | awk '{print $2}')
+  [[ -n "$ws" ]] && cmux rename-workspace --workspace "$ws" "tmux:${name}" 2>/dev/null
+  echo "Ready: tmux:${name}"
+}
+
+cmd_list() {
+  echo "=== tmux sessions ==="
+  tmux list-sessions 2>/dev/null || echo "(none)"
+  echo ""
+  echo "=== cmux workspaces (tmux:*) ==="
+  cmux list-workspaces 2>/dev/null | grep "tmux:" || echo "(none)"
+}
+
+cmd_clean() {
+  acquire_lock
+  local line ref title session_name
+  while IFS= read -r line; do
+    ref=$(echo "$line" | awk '{print $1}' | tr -d '* ')
+    session_name=$(echo "$line" | sed 's/.*tmux://' | awk '{print $1}')
+    if ! tmux has-session -t "$session_name" 2>/dev/null; then
+      cmux close-workspace --workspace "$ref" 2>/dev/null || true
+    fi
+  done < <(cmux list-workspaces 2>/dev/null | grep "tmux:")
+}
+
+case "${1:-}" in
+  sync)  cmd_sync ;;
+  new)   cmd_new "${2:-}" "${3:-}" ;;
+  list)  cmd_list ;;
+  clean) cmd_clean ;;
+  *)     usage ;;
+esac
