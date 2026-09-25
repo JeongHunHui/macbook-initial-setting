@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Claude/Codex usage for tmux."""
-import json, os, sys, time, subprocess
+import json, os, select, sys, time, subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -140,15 +140,16 @@ def format_codex_rate_limits(rate_limits):
     def find_window(target_minutes):
         return next(
             (window for window in window_list
-             if int(window.get("window_minutes", 0) or 0) == target_minutes),
+             if int(window.get("window_minutes", window.get("windowDurationMins", 0)) or 0)
+             == target_minutes),
             None,
         )
 
     def format_window(label, window):
         if not window:
             return f"#[fg=#585858]{label}:-"
-        used = max(0, int(window.get("used_percent", 0) or 0))
-        remaining = fmt_remaining(window.get("resets_at", ""))
+        used = max(0, int(window.get("used_percent", window.get("usedPercent", 0)) or 0))
+        remaining = fmt_remaining(window.get("resets_at", window.get("resetsAt", "")))
         reset = f"({remaining})" if remaining else ""
         return f"{color(used)}{label}:{used}%{reset}"
 
@@ -159,6 +160,52 @@ def format_codex_rate_limits(rate_limits):
         f"{format_window('5h', five_hour)} {format_window('wk', weekly)}"
         "#[fg=#8a8a8a]"
     )
+
+def fetch_codex_rate_limits():
+    """Ask Codex's app-server for the current account snapshot."""
+    proc = None
+    try:
+        proc = subprocess.Popen(
+            ["codex", "app-server", "--stdio"],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True,
+            bufsize=1,
+        )
+        request_list = [
+            {"jsonrpc": "2.0", "id": 0, "method": "initialize", "params": {
+                "clientInfo": {"name": "tmux-usage", "title": "tmux usage", "version": "1.0.0"},
+                "capabilities": {"experimentalApi": True},
+            }},
+            {"jsonrpc": "2.0", "method": "initialized"},
+            {"jsonrpc": "2.0", "id": 1, "method": "account/rateLimits/read", "params": {
+                "excludeResetCreditDetails": True,
+            }},
+        ]
+        for request in request_list:
+            proc.stdin.write(json.dumps(request) + "\n")
+            proc.stdin.flush()
+
+        deadline = time.monotonic() + 5
+        while time.monotonic() < deadline:
+            ready, _, _ = select.select([proc.stdout], [], [], max(0, deadline - time.monotonic()))
+            if not ready:
+                break
+            line = proc.stdout.readline()
+            if not line:
+                break
+            response = json.loads(line)
+            if response.get("id") == 1:
+                return response.get("result", {}).get("rateLimits")
+    except:
+        return None
+    finally:
+        if proc:
+            proc.terminate()
+            try: proc.wait(timeout=1)
+            except: proc.kill()
+    return None
 
 def find_codex_rate_limits():
     try:
@@ -194,7 +241,7 @@ def print_codex_usage():
         print(cache["out"], end="")
         return
 
-    rate_limits = find_codex_rate_limits()
+    rate_limits = fetch_codex_rate_limits() or find_codex_rate_limits()
     if not rate_limits:
         out = cache.get("out") if cache else "#[fg=#585858]codex 5h:? wk:?"
         print(out, end="")
