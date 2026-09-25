@@ -466,7 +466,7 @@ set-hook -gu session-closed
 
 # CPU/RAM 모니터링 (색상+아이콘이 부하에 따라 변함)
 set -g status-right-length 160
-set -g status-right "#[fg=#8a8a8a,bg=#080808] #{?client_prefix,⌨ , }#{?mouse,↗ , }#(~/.tmux/claude-usage.sh) #[fg=#585858]| #(~/.tmux/plugins/tmux-cpu/scripts/cpu_fg_color.sh)CPU #(~/.tmux/plugins/tmux-cpu/scripts/cpu_icon.sh) #(~/.tmux/plugins/tmux-cpu/scripts/cpu_percentage.sh) #(~/.tmux/plugins/tmux-cpu/scripts/ram_fg_color.sh)RAM #(~/.tmux/plugins/tmux-cpu/scripts/ram_icon.sh) #(~/.tmux/plugins/tmux-cpu/scripts/ram_percentage.sh) #(~/.tmux/plugins/tmux-continuum/scripts/continuum_save.sh)" #!important
+set -g status-right "#[fg=#8a8a8a,bg=#080808] #{?client_prefix,⌨ , }#{?mouse,↗ , }#(~/.tmux/claude-usage.sh) " #!important
 
 # tmux-cpu 설정: 아이콘 (부하별 바 그래프)
 set -g @cpu_low_icon "▃"
