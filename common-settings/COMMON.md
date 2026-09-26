@@ -34,11 +34,9 @@ bash ./common-settings/install.sh
 | `gpo` | `git pull origin` |
 | `gs` | `git stash` |
 | `cl` | `clear` |
-| `c` | 잠자기를 막고 Codex 실행 (YOLO 모드) |
-| `cr` | 위와 같고 저장된 Codex 세션 이어하기. 뒤에 세션 이름 지정 가능 |
 
 - fzf 로 `Ctrl R` 명령 기록 검색, `Ctrl T` 파일 찾기, `Alt C` 폴더 이동을 쓴다.
-- `EDITOR` 와 `VISUAL` 은 `code --wait` 이다.
+- `codex` 모듈을 함께 설치하면 `c/cr`과 `mac-init-editor`(VS Code `--wait`)가 설정된다. `common`만 설치할 때는 기존 편집기 선택을 바꾸지 않는다.
 - nvm 은 처음 부를 때 불러온다. 대신 설치된 가장 최신 node 는 바로 쓸 수 있게 PATH 에 넣는다.
 
 ## macOS 키보드

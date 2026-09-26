@@ -24,7 +24,7 @@
   </section>
 
   <section class="panel">
-    <div class="tabs"><button data-view="command" class="active">실행 명령</button><button data-view="prompt">에이전트 프롬프트</button></div>
+    <div class="tabs"><button data-view="command" class="active">실행 명령</button><button data-view="plan">설치 전 확인</button><button data-view="prompt">에이전트 프롬프트</button></div>
     <pre id="output"></pre>
     <div class="actions"><span class="hint" id="summary"></span><button class="copy" id="copy">클립보드에 복사</button></div>
   </section>
@@ -46,11 +46,13 @@
     let view='command';
     const selected=()=>boxes.filter(x=>x.checked).map(x=>x.value);
     function render(){const mods=selected().join(',');summary.textContent=`${selected().length}개 모듈 선택 · ${mods||'선택 없음'}`;
-      out.textContent=view==='command'
-        ? `cd /path/to/macbook-initial-setting\nMAC_INIT_MODULES="${mods}" bash ./setup.sh`
+      document.querySelector('#copy').disabled=!mods;
+      if(!mods){out.textContent='설치할 항목을 하나 이상 선택하세요. 아무 작업도 실행하지 않습니다.';return;}
+      out.textContent=view==='command'||view==='plan'
+        ? `# 저장소 폴더 안에서 실행하세요.\nMAC_INIT_MODULES="${mods}" bash ./setup.sh${view==='plan'?' --plan':''}`
         : `이 폴더는 macbook-initial-setting 패키지다. README.md, TERMINAL.md, MANUAL-CHECKLIST.md와 설치 스크립트를 먼저 읽어라.\n\n선택 모듈: ${mods}\n\n현재 Mac을 읽기 전용으로 먼저 점검하고, 이미 설치된 항목은 건너뛴 뒤 MAC_INIT_MODULES="${mods}" bash ./setup.sh 로 선택한 모듈만 설치해라. 기존 설정은 백업하고 인증정보를 출력하거나 덮어쓰지 마라. 관리자 암호, macOS 개인정보 권한, 시스템 확장, OAuth와 계정 로그인은 우회하지 말고 내가 직접 할 메뉴 경로를 알려라. 마지막에는 자동 완료/수동 필요/실패·보류로 나눠 실제 검증 결과를 보고해라.`;
     }
     boxes.forEach(x=>x.addEventListener('change',render));document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{view=b.dataset.view;document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x===b));render()});
-    document.querySelector('#copy').onclick=async()=>{await navigator.clipboard.writeText(out.textContent);document.querySelector('#copy').textContent='복사됨';setTimeout(()=>document.querySelector('#copy').textContent='클립보드에 복사',1200)};render();
+    document.querySelector('#copy').onclick=async()=>{try{await navigator.clipboard.writeText(out.textContent);document.querySelector('#copy').textContent='복사됨';setTimeout(()=>document.querySelector('#copy').textContent='클립보드에 복사',1200)}catch{const range=document.createRange();range.selectNodeContents(out);const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);summary.textContent='브라우저가 클립보드 접근을 허용하지 않았습니다. 선택된 내용을 Cmd+C로 복사하세요.'}};render();
   </script>
 </main></body></html>

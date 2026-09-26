@@ -14,6 +14,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ├── mac-mini-openclaw-setup.sh  # 맥미니 OpenClaw 세팅 스크립트 (Homebrew → Node.js 22 → OpenClaw)
 ├── mac-mini-openclaw-guide.md  # 맥미니 헤드리스 SSH + OpenClaw 세팅 가이드
 ├── README.md                   # 사용법, 설치 목록, 수동 설치 안내
+├── SETUP.html                 # 모듈 선택, 설치 계획/명령/프롬프트 생성
+├── dotfiles/                  # 터미널·Codex 설정과 부분 설치기
+├── common-settings/           # 공통 셸·macOS·앱 설정
+├── scripts/check.sh           # 설치 없는 검증
+├── scripts/merge-codex-config.py # 개인 설정을 보존하는 TOML 병합
+├── tests/                     # 설치 선택·설정 보존·상태줄·HTML 회귀 검사
 └── CLAUDE.md                   # Claude Code 가이드
 ```
 
@@ -30,6 +36,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 개별 설치 실패가 전체 스크립트를 중단하지 않도록 에러 핸들링 필요
 - 새 패키지 추가 시 `FORMULAS` 또는 `CASKS` 배열에 추가하고, Dock 고정이 필요하면 `DOCK_APPS` 배열에도 추가
 - README.md의 설치 목록도 함께 업데이트할 것
+- 부분 설치 의존성도 갱신한다. 빈 선택이 전체 설치가 되어서는 안 된다.
+- 현재 모델·MCP·계정 인증을 덮어쓰지 않는다. 검증은 백그라운드에서 하고 사용자에게 새 테스트 창을 띄우지 않는다.
+- 변경 후 `bash scripts/check.sh`를 실행한다. 전체 설치기는 테스트 용도로 실행하지 않는다.
 
 ## Common Commands
 

@@ -33,31 +33,17 @@ acquire_lock() {
 cmd_sync() {
   acquire_lock
 
-  # 1) Collect old tmux:* workspace refs
-  local -a old_refs
-  old_refs=()
-  local line ref
-  while IFS= read -r line; do
-    ref=$(echo "$line" | awk '{print $1}' | tr -d '* ')
-    old_refs+=("$ref")
-  done < <(cmux list-workspaces 2>/dev/null | grep "tmux:")
-
-  # 2) Create fresh workspace per tmux session
-  local -a new_refs
-  new_refs=()
-  local session ws
-  for session in $(tmux list-sessions -F '#{session_name}' 2>/dev/null); do
-    ws=$(cmux new-workspace --cwd "$DEFAULT_CWD" --command "tmux attach -t ${session}" 2>&1 | awk '{print $2}')
+  # Synchronize missing workspaces only. Never replace or close an active workspace.
+  local existing session ws
+  existing=$(cmux list-workspaces 2>/dev/null) || return 1
+  while IFS= read -r session; do
+    if print -r -- "$existing" | grep -Fq "tmux:${session}"; then continue; fi
+    ws=$(cmux new-workspace --cwd "$DEFAULT_CWD" --command "tmux attach -t ${(q)session}" 2>/dev/null) || return 1
+    ws=$(print -r -- "$ws" | awk '{print $2}')
     if [[ -n "$ws" ]]; then
       cmux rename-workspace --workspace "$ws" "tmux:${session}" 2>/dev/null
-      new_refs+=("$ws")
     fi
-  done
-
-  # 3) Close old ones (new ones already exist, cmux won't die)
-  for ref in "${old_refs[@]}"; do
-    cmux close-workspace --workspace "$ref" 2>/dev/null || true
-  done
+  done < <(tmux list-sessions -F '#{session_name}' 2>/dev/null)
 }
 
 cmd_new() {
@@ -72,7 +58,7 @@ cmd_new() {
   fi
 
   local ws
-  ws=$(cmux new-workspace --cwd "$cwd" --command "tmux attach -t ${name}" 2>&1 | awk '{print $2}')
+    ws=$(cmux new-workspace --cwd "$cwd" --command "tmux attach -t ${(q)name}" 2>/dev/null | awk '{print $2}')
   [[ -n "$ws" ]] && cmux rename-workspace --workspace "$ws" "tmux:${name}" 2>/dev/null
   echo "Ready: tmux:${name}"
 }

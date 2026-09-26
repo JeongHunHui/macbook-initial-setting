@@ -14,13 +14,15 @@ bash ./dotfiles/install.sh
 |------|-----------|------|
 | `dotfiles/tmux/gpakosz.patch` | `~/.tmux/.tmux.conf` | [gpakosz/.tmux](https://github.com/gpakosz/.tmux) 를 커밋 `87dcd13` 에 고정해 받은 뒤 붙이는 수정. 보조 prefix `C-a` 끄기, 마우스 켜기, cmux 동기화 훅 |
 | `dotfiles/tmux/tmux.conf.local` | `~/.tmux.conf.local` | 단축키, 상태 표시줄, 플러그인 설정 |
-| `dotfiles/tmux/claude-usage.sh` | `~/.tmux/` | 상태 표시줄 오른쪽에 Claude, Codex 사용량 표시. 토큰은 키체인에서 읽는다 |
+| `dotfiles/tmux/claude-usage.sh` | `~/.tmux/` | Codex는 app-server 계정 조회, Claude는 키체인 인증을 이용해 사용량 표시 |
 | `dotfiles/tmux/resurrect-cleanup.sh` | `~/.tmux/` | tmux-resurrect 스냅샷을 최신 10개만 남긴다 |
 | `dotfiles/tmux/com.user.tmux-resurrect-cleanup.plist` | `~/Library/LaunchAgents/` | 위 정리 스크립트를 1분마다 돌리는 LaunchAgent |
 | `dotfiles/ghostty/config` | `~/.config/ghostty/config` | 왼쪽 Option 을 Alt 로, JetBrains Mono, 시작 폴더 `~/Projects`, Codex 입력용 키 |
 | `dotfiles/karabiner/karabiner.json` | `~/.config/karabiner/karabiner.json` | 키 매핑 전체 |
 | `dotfiles/bin/cmux-tmux` | `~/.local/bin/cmux-tmux` | tmux 세션과 cmux 워크스페이스를 맞추는 스크립트 |
 | `dotfiles/zsh/tmux.zsh` | `~/.config/zsh/tmux.zsh` | `t`, `t0` 별칭과 cmux 시작 시 동기화. `.zshrc` 에 source 한 줄이 붙는다 |
+| `dotfiles/zsh/codex.zsh` | `~/.config/zsh/codex.zsh` | `c/cr` YOLO 별칭과 편집기 설정. `codex` 모듈에서 설치 |
+| `dotfiles/bin/mac-init-editor` | `~/.local/bin/mac-init-editor` | 공백이 있는 VS Code 경로를 안전하게 처리하고 `--wait`로 입력 편집 |
 | `chrome-tmux-tabs/` | 수동 설치 | tmux 처럼 크롬 탭을 다루는 확장 |
 
 ## tmux
@@ -41,6 +43,9 @@ prefix 는 기본값 `C-b` 하나만 쓴다. prefix 없는 왼쪽 Option 단축�
 - 상태 표시줄 왼쪽은 비워 두고, 오른쪽에 prefix와 마우스 표시, 현재 Claude/Codex 사용량을 보여 준다.
 - 플러그인은 tmux-cpu, tmux-resurrect, tmux-continuum 이다. 1분마다 세션을 저장하고 tmux 를 켜면 자동 복원한다. 패널 내용과 `claude` 프로세스도 복원한다.
 - 플러그인은 tmux 를 처음 켤 때 자동으로 받는다.
+- 시작·설정 재로드 시 플러그인 자동 업데이트는 끈다. 업데이트는 필요할 때 `prefix u`로 수행한다.
+
+사용량은 활성 pane을 기준으로 조회하며 Codex 응답은 60초 캐시한다. `5h:-`는 서버가 5시간 제한 창을 제공하지 않았다는 뜻이고, `?`는 조회 불가다. `wk`는 기간이 10080분인 창에만 표시한다. 조회 실패 시 최근 값에 `(stale)`, 로그 대체값에 `(log)`를 붙이며 30분 넘은 관측은 버린다. tmux 자동 저장 호출은 상태줄에서 보이지 않는 형태로 유지한다.
 
 ## Karabiner
 
@@ -64,6 +69,8 @@ Caps Lock 을 한영 전환으로 쓰려면 시스템 설정 > 키보드 > 단�
 | `↑` / `↓` | 여러 줄 입력에서 커서를 윗줄 / 아랫줄로 이동 |
 | `Shift+Enter` | 줄바꿈 |
 | `Enter` | 전송 |
+
+`Ctrl+G`는 VS Code로 현재 입력을 편집한다. `Ctrl+S`에 Claude식 stash를 임의로 매핑하지 않는다. 해당 기능과 다른 동작을 연결하면 키 충돌이 생길 수 있다.
 
 Ghostty의 `⌘D`, `⇧⌘D` 분할과 `⌘↑/↓`, `⇧⌘↑/↓` 프롬프트 점프는 꺼 둔다. Codex는 실행 시 키맵을 읽으므로 설정 변경 후 실행 중이던 세션은 `cr`로 다시 연다.
 

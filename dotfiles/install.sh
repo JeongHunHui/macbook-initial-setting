@@ -3,14 +3,33 @@
 # 기존 파일이 있으면 .bak-<시각> 으로 옮겨 두고 덮어쓴다.
 set -euo pipefail
 DIR="$(cd "$(dirname "$0")" && pwd)"
-TS="$(date +%Y%m%d%H%M%S)"
+TS="$(date +%Y%m%d%H%M%S)-$$"
 # ponytail: gpakosz/.tmux 를 이 커밋에 고정한다. 올리려면 커밋만 바꾸고 patch 가 붙는지 확인
 TMUX_COMMIT=87dcd13a28aeb5f18baee630e24b3f5765ae3a4f
 INSTALL_TERMINAL="${INSTALL_TERMINAL:-1}"
 INSTALL_CODEX="${INSTALL_CODEX:-1}"
 
 backup() { [[ -e "$1" || -L "$1" ]] && mv "$1" "$1.bak-$TS" && echo "   백업: $1.bak-$TS"; return 0; }
-put() { mkdir -p "$(dirname "$2")"; backup "$2"; sed "s#__HOME__#$HOME#g" "$1" > "$2"; echo "✅ $2"; }
+put() {
+  local rendered
+  rendered="$(mktemp)"
+  # Escape sed replacement characters in a user home path.
+  local replacement="${HOME//\\/\\\\}"
+  replacement="${replacement//&/\\&}"
+  replacement="${replacement//#/\\#}"
+  sed "s#__HOME__#$replacement#g" "$1" > "$rendered"
+  if cmp -s "$rendered" "$2"; then unlink "$rendered"; return; fi
+  mkdir -p "$(dirname "$2")"
+  backup "$2"
+  install -m 600 "$rendered" "$2"
+  unlink "$rendered"
+  echo "✅ $2"
+}
+add_source() {
+  local line="[ -f ~/.config/zsh/$1 ] && source ~/.config/zsh/$1"
+  touch "$HOME/.zshrc"
+  grep -qxF "$line" "$HOME/.zshrc" || printf '\n%s\n' "$line" >> "$HOME/.zshrc"
+}
 
 if [[ "$INSTALL_TERMINAL" == 1 ]]; then
 echo "🖥️  tmux (gpakosz/.tmux + 로컬 설정)"
@@ -41,14 +60,20 @@ echo "🔗 cmux 연동"
 put "$DIR/bin/cmux-tmux" "$HOME/.local/bin/cmux-tmux"
 chmod +x "$HOME/.local/bin/cmux-tmux"
 put "$DIR/zsh/tmux.zsh" "$HOME/.config/zsh/tmux.zsh"
-LINE='[ -f ~/.config/zsh/tmux.zsh ] && source ~/.config/zsh/tmux.zsh'
-grep -qxF "$LINE" "$HOME/.zshrc" 2>/dev/null || echo "$LINE" >> "$HOME/.zshrc"
+add_source tmux.zsh
 grep -q '.local/bin' "$HOME/.zshrc" 2>/dev/null || echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.zshrc"
 fi
 
 if [[ "$INSTALL_CODEX" == 1 ]]; then
   echo "🤖 Codex CLI 설정"
-  put "$DIR/codex/config.toml" "$HOME/.codex/config.toml"
+  # Prefer Homebrew Python even if an older Python shadows it in PATH.
+  python_bin="$(brew --prefix python@3.13)/bin/python3.13"
+  [[ -x "$python_bin" ]] || { echo '먼저 MAC_INIT_MODULES=codex bash setup.sh 로 Python 의존성을 설치하세요.' >&2; exit 1; }
+  "$python_bin" "$DIR/../scripts/merge-codex-config.py" "$DIR/codex/config.toml" "$HOME/.codex/config.toml"
+  put "$DIR/bin/mac-init-editor" "$HOME/.local/bin/mac-init-editor"
+  chmod +x "$HOME/.local/bin/mac-init-editor"
+  put "$DIR/zsh/codex.zsh" "$HOME/.config/zsh/codex.zsh"
+  add_source codex.zsh
 fi
 
 echo "✅ 선택한 터미널/Codex 설정 완료"

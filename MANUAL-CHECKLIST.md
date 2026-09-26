@@ -14,6 +14,8 @@
 - [ ] Ghostty의 Reload Configuration 실행 후 Codex에서 `Cmd+←/→`, 여러 줄 `↑/↓` 확인. tmux `show-options -g prefix2`는 `None`이어야 함
 - [ ] `gh auth login`으로 GitHub 로그인
 - [ ] Codex 로그인 후 `c`, `cr`, `/status` 확인
+- [ ] Codex를 새로 실행해 `Ctrl+G`로 VS Code가 열리는지 확인 (`mac-init-editor` 경유)
+- [ ] `tmux show-options -g status-right`에 `continuum_save.sh`가 있고 `@continuum-save-last-timestamp`가 갱신되는지 확인
 - [ ] Codex에서 `ㅇㅇ` 직후 Enter 테스트. 누락 시 새 Codex 세션인지와 `disable_paste_burst = true` 확인
 
 ## 선택

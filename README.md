@@ -23,6 +23,12 @@ MAC_INIT_MODULES="system,cli,terminal,codex,common" bash ./setup.sh
 
 지원 모듈은 `system`, `cli`, `apps`, `dock`, `terminal`, `codex`, `common`이다.
 
+`bash ./setup.sh --plan`은 설치 없이 선택 항목과 의존성을 보여 준다. `MAC_INIT_MODULES=""`는 아무것도 설치하지 않으며, 잘못된 모듈 이름은 실행 전에 거부한다. `system`/`dock`만 선택하면 Homebrew 작업은 하지 않는다. 설치 실패 항목은 마지막에 모아서 알리고 종료 코드 1을 반환한다.
+
+- `terminal`은 `apps`를 선택하지 않아도 Git·tmux·Python·Ghostty·JetBrains Mono·Karabiner·cmux를 설치한다.
+- `codex`는 Python·Codex CLI·VS Code와 `c/cr`·외부 편집기를 설치한다. 이미 설치한 Codex는 유지한다.
+- `common`은 공통 셸·앱·macOS 입력 설정이다. Codex 단축 명령은 `codex` 모듈에서 관리한다.
+
 ## 현재 구성
 
 | 영역 | 적용 내용 |
@@ -64,6 +70,18 @@ MAC_INIT_MODULES="system,cli,terminal,codex,common" bash ./setup.sh
 - 설치 스크립트는 기존 dotfile을 `.bak-<시각>`으로 백업한다.
 - 이미 설치된 Homebrew 항목은 건너뛴다.
 - `common-settings/install.sh`는 여러 번 실행할 수 있다.
-- Codex 설정 설치는 기존 `~/.codex/config.toml`을 백업하므로 MCP/개인 설정이 있다면 백업본과 병합한다.
+- Codex 입력 설정은 검증 후 병합한다. 기존 모델·추론 수준·MCP·프로젝트·개인 설정은 보존하고, 변경 전 백업한다. 같은 설정으로 재실행하면 변경하지 않는다.
+- `common`의 Git ignore는 기존 패턴에 추가하며, 셸·앱 설정은 변경 전 백업한다.
+- `cmux-tmux sync`는 없는 워크스페이스만 추가한다. 열린 워크스페이스를 닫고 다시 만들지 않는다.
+
+## 검증
+
+```bash
+bash scripts/check.sh
+```
+
+Python 3.11 이상(Homebrew Python 3.13 우선), Node.js, zsh가 필요하다. 설치를 실행하거나 창을 띄우지 않고 셸/JSON/plist/TOML 문법, 설정 보존, 선택 설치, 사용량 응답 처리, HTML 동작·링크를 검사한다.
+
+현재 Mac 적용 후에는 `ghostty +validate-config`, `codex app-server --strict-config --stdio </dev/null`, `tmux show-options -g prefix2`로 확인한다. `codex --version`은 설정 검증을 대신하지 못한다.
 
 상세 터미널 설명은 [TERMINAL.md](TERMINAL.md), 에이전트 실행 지시는 [SETUP-PROMPT.md](SETUP-PROMPT.md)에 있다.

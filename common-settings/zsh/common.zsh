@@ -13,11 +13,7 @@ alias gs='git stash'
 
 # 기타
 alias cl='clear'
-alias c='caffeinate -dimsu codex --dangerously-bypass-approvals-and-sandbox'
-alias cr='caffeinate -dimsu codex resume --dangerously-bypass-approvals-and-sandbox'
-
-export VISUAL="/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code --wait"
-export EDITOR="/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code --wait"
+[ -f "$HOME/.config/zsh/codex.zsh" ] && source "$HOME/.config/zsh/codex.zsh"
 export PATH="$HOME/.local/bin:$PATH"
 
 # pyenv

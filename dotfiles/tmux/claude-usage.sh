@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Claude/Codex usage for tmux."""
+import fcntl
 import json, os, select, sys, time, subprocess
 from datetime import datetime, timezone
 from pathlib import Path
@@ -10,7 +11,7 @@ CODEX_CACHE = HOME / ".tmux/.codex-usage-cache.json"
 CODEX_SESSION_DIR = HOME / ".codex/sessions"
 OMC_CACHE = HOME / ".claude/plugins/oh-my-claudecode/.usage-cache.json"
 CACHE_TTL = 300      # fresh cache: 5 min
-CODEX_CACHE_TTL = 30 # local log cache
+CODEX_CACHE_TTL = 60 # live account snapshot cache
 FAIL_TTL = 300       # don't retry API for 5 min after failure
 STALE_TTL = 1800     # show stale data up to 30 min
 
@@ -18,8 +19,9 @@ def read_cache(path=CACHE):
     try: return json.loads(path.read_text())
     except: return None
 
-def write_cache(out, error=False, path=CACHE):
-    try: path.write_text(json.dumps({"ts": int(time.time()), "out": out, "err": error}))
+def write_cache(out, error=False, path=CACHE, data_ts=None):
+    now = int(time.time())
+    try: path.write_text(json.dumps({"ts": now, "data_ts": now if data_ts is None else data_ts, "out": out, "err": error}))
     except: pass
 
 def get_token():
@@ -86,8 +88,9 @@ def ensure_claude_label(out):
 
 def is_codex_pane():
     try:
+        target = ["-t", sys.argv[1]] if len(sys.argv) > 1 and sys.argv[1].startswith('%') else []
         r = subprocess.run(
-            ["tmux", "display-message", "-p", "#{pane_current_command} #{pane_pid}"],
+            ["tmux", "display-message", *target, "-p", "#{pane_current_command} #{pane_pid}"],
             capture_output=True, text=True, timeout=1
         )
         if r.returncode != 0:
@@ -148,7 +151,10 @@ def format_codex_rate_limits(rate_limits):
     def format_window(label, window):
         if not window:
             return f"#[fg=#585858]{label}:-"
-        used = max(0, int(window.get("used_percent", window.get("usedPercent", 0)) or 0))
+        percent = window.get("used_percent", window.get("usedPercent"))
+        if percent is None:
+            return f"#[fg=#585858]{label}:?"
+        used = max(0, int(percent))
         remaining = fmt_remaining(window.get("resets_at", window.get("resetsAt", "")))
         reset = f"({remaining})" if remaining else ""
         return f"{color(used)}{label}:{used}%{reset}"
@@ -170,8 +176,7 @@ def fetch_codex_rate_limits():
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
-            text=True,
-            bufsize=1,
+            bufsize=0,
         )
         request_list = [
             {"jsonrpc": "2.0", "id": 0, "method": "initialize", "params": {
@@ -183,28 +188,41 @@ def fetch_codex_rate_limits():
                 "excludeResetCreditDetails": True,
             }},
         ]
-        for request in request_list:
-            proc.stdin.write(json.dumps(request) + "\n")
-            proc.stdin.flush()
-
+        def send(request):
+            proc.stdin.write((json.dumps(request) + "\n").encode())
+        send(request_list[0])
+        buffer = b''
         deadline = time.monotonic() + 5
         while time.monotonic() < deadline:
             ready, _, _ = select.select([proc.stdout], [], [], max(0, deadline - time.monotonic()))
             if not ready:
                 break
-            line = proc.stdout.readline()
-            if not line:
+            chunk = os.read(proc.stdout.fileno(), 65536)
+            if not chunk:
                 break
-            response = json.loads(line)
-            if response.get("id") == 1:
-                return response.get("result", {}).get("rateLimits")
+            buffer += chunk
+            while b'\n' in buffer:
+                line, buffer = buffer.split(b'\n', 1)
+                response = json.loads(line)
+                if response.get('id') == 0:
+                    if 'error' in response:
+                        return None
+                    for request in request_list[1:]:
+                        send(request)
+                elif response.get("id") == 1:
+                    return response.get("result", {}).get("rateLimits")
     except:
         return None
     finally:
         if proc:
             proc.terminate()
             try: proc.wait(timeout=1)
-            except: proc.kill()
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                proc.wait()
+            for stream in (proc.stdin, proc.stdout):
+                if stream:
+                    stream.close()
     return None
 
 def find_codex_rate_limits():
@@ -219,7 +237,13 @@ def find_codex_rate_limits():
 
     for session_file in session_file_list[:20]:
         try:
-            line_list = session_file.read_text(errors="ignore").splitlines()
+            if time.time() - session_file.stat().st_mtime > STALE_TTL:
+                continue
+            # Session logs can be hundreds of MB; only scan a bounded tail.
+            with session_file.open('rb') as stream:
+                size = stream.seek(0, 2)
+                stream.seek(max(0, size - 524288))
+                line_list = stream.read().decode(errors='ignore').splitlines()
         except:
             continue
         for line in reversed(line_list):
@@ -230,8 +254,13 @@ def find_codex_rate_limits():
             except:
                 continue
             rate_limits = event.get("rate_limits") or event.get("payload", {}).get("rate_limits")
-            if rate_limits:
-                return rate_limits
+            timestamp = event.get('timestamp')
+            try:
+                age = time.time() - datetime.fromisoformat(timestamp.replace('Z', '+00:00')).timestamp()
+            except (ValueError, TypeError, AttributeError):
+                continue
+            if rate_limits and 0 <= age < STALE_TTL:
+                return {**rate_limits, '_observed_at': time.time() - age}
     return None
 
 def print_codex_usage():
@@ -241,15 +270,39 @@ def print_codex_usage():
         print(cache["out"], end="")
         return
 
-    rate_limits = fetch_codex_rate_limits() or find_codex_rate_limits()
-    if not rate_limits:
-        out = cache.get("out") if cache else "#[fg=#585858]codex 5h:? wk:?"
-        print(out, end="")
+    # Multiple tmux clients should not start duplicate app servers.
+    CODEX_CACHE.parent.mkdir(parents=True, exist_ok=True)
+    with CODEX_CACHE.with_suffix('.lock').open('a') as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            print(cache.get('out', '') if cache and now - cache.get('ts', 0) < STALE_TTL
+                  else '#[fg=#585858]codex 5h:? wk:?', end='')
+            return
+        # Recheck after acquiring the lock: another process may have just refreshed.
+        cache = read_cache(CODEX_CACHE)
+        if cache and now - cache.get('ts', 0) < CODEX_CACHE_TTL:
+            print(cache['out'], end='')
+            return
+        rate_limits = fetch_codex_rate_limits()
+        if rate_limits:
+            out = format_codex_rate_limits(rate_limits)
+            write_cache(out, path=CODEX_CACHE)
+            print(out, end='')
+            return
+        # Keep a recent successful snapshot instead of regressing to older logs.
+        data_ts = cache.get('data_ts', cache.get('ts', 0)) if cache else 0
+        if cache and now - data_ts < STALE_TTL and 'wk:?' not in cache['out']:
+            out = cache['out'].removesuffix(' (stale)') + ' (stale)'
+            write_cache(out, error=True, path=CODEX_CACHE, data_ts=data_ts)
+            print(out, end='')
+            return
+        rate_limits = find_codex_rate_limits()
+        out = format_codex_rate_limits(rate_limits) + ' (log)' if rate_limits else '#[fg=#585858]codex 5h:? wk:?'
+        write_cache(out, error=True, path=CODEX_CACHE,
+                    data_ts=rate_limits.get('_observed_at') if rate_limits else None)
+        print(out, end='')
         return
-
-    out = format_codex_rate_limits(rate_limits)
-    write_cache(out, path=CODEX_CACHE)
-    print(out, end="")
 
 def write_omc_cache(resp, f5, wk):
     try:
@@ -316,4 +369,5 @@ def main():
     write_cache(out)
     print(out, end="")
 
-main()
+if __name__ == '__main__':
+    main()

@@ -5,8 +5,27 @@ echo "=== 맥북 환경 설정 ==="
 
 # 선택 설치: 쉼표로 구분. 기본값은 전체 설치.
 # 예: MAC_INIT_MODULES="system,cli,terminal,codex" bash ./setup.sh
-MAC_INIT_MODULES="${MAC_INIT_MODULES:-system,cli,apps,dock,terminal,codex,common}"
+MAC_INIT_MODULES="${MAC_INIT_MODULES-system,cli,apps,dock,terminal,codex,common}"
+MAC_INIT_MODULES="${MAC_INIT_MODULES//[[:space:]]/}"
+if [[ -z "$MAC_INIT_MODULES" ]]; then
+  echo "선택된 모듈이 없어 아무 작업도 하지 않습니다."
+  exit 0
+fi
+IFS=',' read -r -a selected_modules <<< "$MAC_INIT_MODULES"
+case "$MAC_INIT_MODULES" in ,*|*,|*,,*) echo "빈 모듈 이름은 사용할 수 없습니다." >&2; exit 2 ;; esac
+for module in "${selected_modules[@]}"; do
+  case "$module" in system|cli|apps|dock|terminal|codex|common) ;; *) echo "알 수 없는 모듈: $module" >&2; exit 2 ;; esac
+done
+if [[ "${1:-}" == --plan ]]; then
+  echo "선택 모듈: $MAC_INIT_MODULES"
+  [[ ",$MAC_INIT_MODULES," != *",terminal,"* ]] || echo "terminal: Git, tmux, Python, Ghostty, JetBrains Mono, Karabiner, cmux"
+  [[ ",$MAC_INIT_MODULES," != *",codex,"* ]] || echo "codex: Python, Codex CLI, VS Code, c/cr 및 편집기 설정"
+  exit 0
+fi
+[[ $# -eq 0 ]] || { echo "사용법: bash setup.sh [--plan]" >&2; exit 2; }
+[[ "$(uname -s)" == Darwin ]] || { echo "macOS 전용 설치 스크립트입니다." >&2; exit 2; }
 enabled() { [[ ",$MAC_INIT_MODULES," == *",$1,"* ]]; }
+failures=()
 echo "선택 모듈: $MAC_INIT_MODULES"
 
 if enabled system; then
@@ -33,6 +52,7 @@ fi
 # ---------------------------
 # Homebrew 설치/업데이트
 # ---------------------------
+if enabled cli || enabled apps || enabled terminal || enabled codex || enabled common; then
 echo "🍺 Homebrew 점검..."
 if ! command -v brew >/dev/null 2>&1; then
   echo "➡️  Homebrew 미설치: 설치 진행"
@@ -47,7 +67,8 @@ if ! command -v brew >/dev/null 2>&1; then
 else
   echo "✅ Homebrew 설치됨"
 fi
-brew update
+brew update || failures+=("Homebrew 업데이트")
+fi
 
 # ---------------------------
 # 헬퍼 함수
@@ -62,13 +83,13 @@ install_formula() {
   if is_formula_installed "$name"; then
     echo "✅ (설치됨) $name"
   else
-    if is_formula_available "$name"; then :; fi # shellcheck용
     if is_formula_available "$name"; then
       echo "⬇️  설치: $name"
-      brew install "$name" || { echo "❌ 설치 실패: $name"; return 1; }
+      brew install "$name" || { echo "❌ 설치 실패: $name"; failures+=("$name"); return 0; }
       echo "✅ 완료: $name"
     else
       echo "❌ 설치 불가(찾을 수 없음): $name"
+      failures+=("$name")
     fi
   fi
 }
@@ -87,11 +108,13 @@ install_cask() {
           echo "⏭️  스킵(/Applications에 이미 존재): $token"
         else
           echo "❌ 설치 실패: $token"
+          failures+=("$token")
           echo "   └─ 로그: $out"
         fi
       fi
     else
       echo "❌ 설치 불가(찾을 수 없음): $token"
+      failures+=("$token")
     fi
   fi
 }
@@ -106,6 +129,8 @@ FORMULAS=(
   "python@3.13"
   "node"
   "tmux"
+  "gh"
+  "fzf"
 )
 
 CASKS=(
@@ -178,7 +203,8 @@ DOCK_APPS=(
 
 dock_has_app() {
   local app="$1"
-  defaults read com.apple.dock persistent-apps 2>/dev/null | grep -F "$app" >/dev/null 2>&1
+  local escaped="${app// /%20}"
+  defaults read com.apple.dock persistent-apps 2>/dev/null | grep -F -e "$app" -e "$escaped" >/dev/null 2>&1
 }
 dock_add_app() {
   local app_path="$1"
@@ -206,6 +232,15 @@ fi
 # ---------------------------
 # 터미널 설정 (tmux, Ghostty, Karabiner, cmux 연동)
 # ---------------------------
+if enabled terminal; then
+  for formula in git tmux python@3.13; do install_formula "$formula"; done
+  for cask in ghostty font-jetbrains-mono karabiner-elements cmux; do install_cask "$cask"; done
+fi
+if enabled codex; then
+  install_formula python@3.13
+  command -v codex >/dev/null 2>&1 || install_cask codex
+  install_cask visual-studio-code
+fi
 echo
 echo "=============================="
 echo "🖥️  터미널 설정 설치"
@@ -213,7 +248,7 @@ echo "=============================="
 if enabled terminal || enabled codex; then
   INSTALL_TERMINAL="$(enabled terminal && echo 1 || echo 0)" \
   INSTALL_CODEX="$(enabled codex && echo 1 || echo 0)" \
-    bash "$(dirname "$0")/dotfiles/install.sh" || echo "❌ 터미널/Codex 설정 설치 실패"
+    bash "$(dirname "$0")/dotfiles/install.sh" || failures+=("터미널/Codex 설정")
 fi
 
 if enabled common; then
@@ -221,15 +256,17 @@ if enabled common; then
   echo "=============================="
   echo "⚙️  공통 macOS·셸 설정 설치"
   echo "=============================="
-  bash "$(dirname "$0")/common-settings/install.sh" || echo "❌ 공통 설정 설치 실패"
+  bash "$(dirname "$0")/common-settings/install.sh" || failures+=("공통 설정")
 fi
 
 echo
 echo "=============================="
-echo "✅ 전체 작업 완료"
-echo "   - JetBrains(유료): IntelliJ IDEA Ultimate, PyCharm Professional"
-echo "   - DataGrip, Docker Desktop 설치 시도"
-echo "   - 지정 앱들 Dock 고정 (있으면 추가, 없으면 스킵)"
+echo "선택 작업 종료"
 echo "   - 선택 모듈: $MAC_INIT_MODULES"
 echo "   - Karabiner 권한, 계정 로그인, 크롬 확장은 MANUAL-CHECKLIST.md 참고"
 echo "=============================="
+if (( ${#failures[@]} )); then
+  printf '❌ 실패: %s\n' "${failures[@]}"
+  exit 1
+fi
+echo "✅ 선택 모듈 설치 완료"

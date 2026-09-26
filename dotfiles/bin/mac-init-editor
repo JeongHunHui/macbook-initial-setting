@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# Keep the application path with spaces in one argument.
+if [[ -x '/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code' ]]; then
+  exec '/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code' --wait "$@"
+fi
+if command -v code >/dev/null 2>&1; then exec code --wait "$@"; fi
+echo 'VS Code를 설치하거나 PATH에 code 명령을 추가하세요.' >&2
+exit 127

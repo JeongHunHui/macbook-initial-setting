@@ -271,7 +271,7 @@ tmux_conf_theme_right_separator_sub="|"
 #     - #{username_ssh}
 tmux_conf_theme_status_left=" ❐ #S | ↑#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,} "
 #tmux_conf_theme_status_left=" ❐ #S | ↑#{?uptime_y, #{uptime_y}y,}#{?uptime_d, #{uptime_d}d,}#{?uptime_h, #{uptime_h}h,}#{?uptime_m, #{uptime_m}m,} | #{pretty_pane_current_path} "
-tmux_conf_theme_status_right=" #{prefix}#{mouse}#{pairing}#{synchronized}#(~/.tmux/plugins/tmux-cpu/scripts/cpu_fg_color.sh) CPU #(~/.tmux/plugins/tmux-cpu/scripts/cpu_icon.sh) #(~/.tmux/plugins/tmux-cpu/scripts/cpu_percentage.sh) #(~/.tmux/plugins/tmux-cpu/scripts/ram_fg_color.sh) RAM #(~/.tmux/plugins/tmux-cpu/scripts/ram_icon.sh) #(~/.tmux/plugins/tmux-cpu/scripts/ram_percentage.sh) , %R , %d %b | #{username}#{root} | #{hostname} "
+tmux_conf_theme_status_right=" #{prefix}#{mouse}#(~/.tmux/claude-usage.sh #{pane_id}) "
 
 # status left style
 tmux_conf_theme_status_left_fg="$tmux_conf_theme_colour_6,$tmux_conf_theme_colour_7,$tmux_conf_theme_colour_8"
@@ -450,7 +450,7 @@ set -g detach-on-destroy off #!important
 set -g status on #!important
 
 # status-left: 세션탭 + git branch (hook으로 즉시 갱신)
-set -g status-interval 1
+set -g status-interval 5
 unbind -n MouseDrag1Border  # 마우스로 패널 크기 조절 방지
 set -g status-left-length 120
 set -g status-left "" #!important
@@ -461,8 +461,8 @@ set-hook -gu session-created
 set-hook -gu session-closed
 
 # CPU/RAM 모니터링 (색상+아이콘이 부하에 따라 변함)
-set -g status-right-length 160
-set -g status-right "#[fg=#8a8a8a,bg=#080808] #{?client_prefix,⌨ , }#{?mouse,↗ , }#(~/.tmux/claude-usage.sh) " #!important
+set -g status-right-length 160 #!important
+set -g status-right "#[fg=#8a8a8a,bg=#080808] #{?client_prefix,⌨ , }#{?mouse,↗ , }#(~/.tmux/claude-usage.sh #{pane_id}) #(~/.tmux/plugins/tmux-continuum/scripts/continuum_save.sh)" #!important
 
 # tmux-cpu 설정: 아이콘 (부하별 바 그래프)
 set -g @cpu_low_icon "▃"
@@ -499,12 +499,12 @@ set -g @ram_high_thresh "80"
 # by default, launching tmux will update tpm and all plugins
 #   - true (default)
 #   - false
-tmux_conf_update_plugins_on_launch=true
+tmux_conf_update_plugins_on_launch=false
 
 # by default, reloading the configuration will update tpm and all plugins
 #   - true (default)
 #   - false
-tmux_conf_update_plugins_on_reload=true
+tmux_conf_update_plugins_on_reload=false
 
 # by default, reloading the configuration will uninstall tpm and plugins when no
 # plugins are enabled
