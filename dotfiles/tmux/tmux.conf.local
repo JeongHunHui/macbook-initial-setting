@@ -417,6 +417,16 @@ set -as terminal-features ',xterm-ghostty:extkeys'
 # display a message after toggling mouse support
 bind m run "cut -c3- '#{TMUX_CONF}' | sh -s _toggle_mouse" \; display 'mouse #{?#{mouse},on,off}'
 
+# Keep Cmd+Left -> Ctrl+A available to the editor, including on reload.
+set -g prefix2 None #!important
+unbind C-a
+# Do not erase scrollback as a side effect of an editor shortcut.
+unbind -n C-l
+unbind -n M-a
+unbind -n M-s
+unbind -n M-w
+unbind -n M-z
+unbind -n M-1
 unbind -n M-c
 unbind -n M-Left
 unbind -n M-Right

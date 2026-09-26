@@ -11,6 +11,7 @@
 - [ ] 입력 소스 단축키에서 F18을 입력 소스 전환으로 지정해 Caps Lock 한영 전환 확인
 - [ ] Ghostty를 완전히 재실행하고 `tmux` 시작
 - [ ] `Option+D/F`, 마우스 pane 클릭, pane 내부 드래그 복사 확인
+- [ ] Ghostty의 Reload Configuration 실행 후 Codex에서 `Cmd+←/→`, 여러 줄 `↑/↓` 확인. tmux `show-options -g prefix2`는 `None`이어야 함
 - [ ] `gh auth login`으로 GitHub 로그인
 - [ ] Codex 로그인 후 `c`, `cr`, `/status` 확인
 - [ ] Codex에서 `ㅇㅇ` 직후 Enter 테스트. 누락 시 새 Codex 세션인지와 `disable_paste_burst = true` 확인
