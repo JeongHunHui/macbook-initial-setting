@@ -417,29 +417,15 @@ set -as terminal-features ',xterm-ghostty:extkeys'
 # display a message after toggling mouse support
 bind m run "cut -c3- '#{TMUX_CONF}' | sh -s _toggle_mouse" \; display 'mouse #{?#{mouse},on,off}'
 
-# Option+z = zoom
-bind -n M-z resize-pane -Z
 unbind -n M-c
 unbind -n M-Left
 unbind -n M-Right
 unbind -n M-Up
 unbind -n M-Down
 
-# Option+s = 수평 분할 (홈 디렉토리)
-bind -n M-s split-window -h -c ~ #!important
-
-# Option+a = 현재 pane을 새 window로 분리 (이름 프롬프트)
-bind -n M-a command-prompt -p "window name:" "break-pane -n '%%'"
-
 # Option+f/d = 다음/이전 window 이동
 bind -n M-f next-window
 bind -n M-d previous-window
-
-# Option+w = pane 닫기
-bind -n M-w kill-pane
-
-# Option+1 = even-horizontal 레이아웃
-bind -n M-1 select-layout even-horizontal
 
 # 윈도우 이름 자동 변경 끄기 (수동으로 설정한 이름 유지)
 set -g allow-rename off #!important

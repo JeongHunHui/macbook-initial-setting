@@ -32,7 +32,7 @@ MAC_INIT_MODULES="system,cli,terminal,codex,common" bash ./setup.sh
 | 앱 | Chrome, Figma, Slack, Notion, Obsidian, VS Code, JetBrains 도구, Cursor, Docker, Postman, Ghostty, cmux, Rectangle, Scroll Reverser, Raycast, Karabiner |
 | 셸 | fzf 단축키, Git alias, `c`/`cr` Codex YOLO alias, VS Code 외부 편집기 |
 | tmux | 마우스 pane 선택, pane 내부 드래그 복사→macOS 클립보드, Option+D/F 창 이동, Option+화살표 비활성화 |
-| Ghostty | 왼쪽 Option=Alt, Shift+Enter CSI-u 전달, Option+화살표 비활성화 |
+| Ghostty | 왼쪽 Option=Alt, Shift+Enter CSI-u 전달, Option+화살표 비활성화, Cmd+D 분할·Cmd+위/아래 프롬프트 점프 비활성화 |
 | Codex | Enter 전송, Shift+Enter 줄바꿈, 한글 IME 대응 `disable_paste_burst`, scrollback 친화 설정, Ctrl+G→VS Code |
 | Karabiner | Caps Lock→F18, Ghostty에서 한글 입력 중 Option 기반 tmux 명령, Chrome 전용 Option 단축키 |
 
@@ -44,6 +44,7 @@ MAC_INIT_MODULES="system,cli,terminal,codex,common" bash ./setup.sh
 - Codex `Enter`: 전송
 - Codex `Shift+Enter`: 줄바꿈
 - tmux `Option+D/F`: 이전/다음 window
+- Codex `Cmd+왼쪽/오른쪽`: 입력 줄 시작/끝, `위/아래`: 여러 줄 커서 이동
 - tmux 마우스 클릭: pane 이동
 - tmux 드래그: 현재 pane 안에서 선택하고 macOS 클립보드로 복사
 

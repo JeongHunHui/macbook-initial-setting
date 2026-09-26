@@ -11,3 +11,7 @@ submit = "enter"
 
 [tui.keymap.editor]
 insert_newline = "shift-enter"
+move_up = "up"
+move_down = "down"
+move_line_start = "ctrl-a"
+move_line_end = "ctrl-e"

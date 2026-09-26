@@ -4,6 +4,14 @@ mouse-scroll-multiplier = 0.5
 link-url = true
 working-directory = __HOME__/Projects
 keybind = shift+enter=csi:13;2u
+keybind = cmd+arrow_left=text:\x01
+keybind = cmd+arrow_right=text:\x05
+keybind = cmd+arrow_up=unbind
+keybind = cmd+arrow_down=unbind
+keybind = cmd+shift+arrow_up=unbind
+keybind = cmd+shift+arrow_down=unbind
+keybind = cmd+d=unbind
+keybind = cmd+shift+d=unbind
 keybind = alt+arrow_left=unbind
 keybind = alt+arrow_right=unbind
 keybind = alt+arrow_up=unbind

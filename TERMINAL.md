@@ -17,7 +17,7 @@ bash ./dotfiles/install.sh
 | `dotfiles/tmux/claude-usage.sh` | `~/.tmux/` | 상태 표시줄 오른쪽에 Claude, Codex 사용량 표시. 토큰은 키체인에서 읽는다 |
 | `dotfiles/tmux/resurrect-cleanup.sh` | `~/.tmux/` | tmux-resurrect 스냅샷을 최신 10개만 남긴다 |
 | `dotfiles/tmux/com.user.tmux-resurrect-cleanup.plist` | `~/Library/LaunchAgents/` | 위 정리 스크립트를 1분마다 돌리는 LaunchAgent |
-| `dotfiles/ghostty/config` | `~/.config/ghostty/config` | 왼쪽 Option 을 Alt 로, JetBrains Mono, 시작 폴더 `~/Projects` |
+| `dotfiles/ghostty/config` | `~/.config/ghostty/config` | 왼쪽 Option 을 Alt 로, JetBrains Mono, 시작 폴더 `~/Projects`, Codex 입력용 키 |
 | `dotfiles/karabiner/karabiner.json` | `~/.config/karabiner/karabiner.json` | 키 매핑 전체 |
 | `dotfiles/bin/cmux-tmux` | `~/.local/bin/cmux-tmux` | tmux 세션과 cmux 워크스페이스를 맞추는 스크립트 |
 | `dotfiles/zsh/tmux.zsh` | `~/.config/zsh/tmux.zsh` | `t`, `t0` 별칭과 cmux 시작 시 동기화. `.zshrc` 에 source 한 줄이 붙는다 |
@@ -25,23 +25,18 @@ bash ./dotfiles/install.sh
 
 ## tmux
 
-prefix 는 기본값 `C-b` 하나만 쓴다. 자주 쓰는 동작은 prefix 없이 왼쪽 Option 으로 누른다.
+prefix 는 기본값 `C-b` 하나만 쓴다. prefix 없는 왼쪽 Option 단축키는 창 이동 두 개만 둔다.
 
 | 키 | 동작 |
 |----|------|
-| `⌥S` | 세로로 나누기 (새 패널은 `~` 에서 시작) |
-| `⌥Z` | 현재 패널 확대/복귀 |
-| `⌥W` | 현재 패널 닫기 |
-| `⌥A` | 현재 패널을 새 창으로 떼어내기 (이름 입력) |
 | `⌥F` / `⌥D` | 다음 창 / 이전 창 |
-| `⌥1` | 패널 가로 균등 배치 |
 | `prefix m` | 마우스 켜기/끄기 |
 
 - 마우스로 패널 경계를 끌어 크기를 바꾸는 동작은 막아 두었다.
 - 마우스로 패널을 클릭해 이동한다. 드래그 선택은 현재 패널 안으로 제한되고 놓는 순간 macOS 클립보드에 복사된다.
 - `⌥`+화살표와 `⌥C` 이동은 끄고, 창 이동은 `⌥D/F`만 사용한다.
 - 창 이름 자동 변경 끄기, 세션을 닫아도 tmux 에서 튕기지 않기(`detach-on-destroy off`)를 켜 두었다.
-- 상태 표시줄 왼쪽은 비워 두고, 오른쪽에 prefix와 마우스 표시, Claude 사용량, CPU, RAM 을 보여 준다.
+- 상태 표시줄 왼쪽은 비워 두고, 오른쪽에 prefix와 마우스 표시, 현재 Claude/Codex 사용량을 보여 준다.
 - 플러그인은 tmux-cpu, tmux-resurrect, tmux-continuum 이다. 1분마다 세션을 저장하고 tmux 를 켜면 자동 복원한다. 패널 내용과 `claude` 프로세스도 복원한다.
 - 플러그인은 tmux 를 처음 켤 때 자동으로 받는다.
 
@@ -52,12 +47,23 @@ prefix 는 기본값 `C-b` 하나만 쓴다. 자주 쓰는 동작은 prefix 없�
 | Caps Lock | 항상 | F18 (한영 전환용) |
 | `` ` `` | 항상 | `non_us_backslash` |
 | 오른쪽 Shift | 항상 | fn |
-| 왼쪽 ⌥ + S F D W Z 1 A | Ghostty 에서 한글 입력 중 | 위 tmux 단축키를 `tmux` 명령으로 바로 실행. 한글 입력기가 Option 키를 먹는 문제를 피한다 |
+| 왼쪽 `⌥D/F` | Ghostty 에서 한글 입력 중 | 이전/다음 tmux 창으로 이동. 한글 입력기가 Option 키를 먹는 문제를 피한다 |
 | `⌥C` | 크롬 | 개발자 도구 (`⌘⌥I`) |
 | `⌥S` | 크롬 | 탭 분할 보기 (`⌘⌥N`) |
 | `⌥W` | 크롬 | 탭 닫기 (`⌘W`) |
 
 Caps Lock 을 한영 전환으로 쓰려면 시스템 설정 > 키보드 > 단축키 > 입력 소스에서 "이전 입력 소스 선택"을 F18 로 지정한다.
+
+## Codex 입력 키
+
+| 키 | 동작 |
+|----|------|
+| `⌘←` / `⌘→` | 현재 입력 줄의 시작 / 끝 |
+| `↑` / `↓` | 여러 줄 입력에서 커서를 윗줄 / 아랫줄로 이동 |
+| `Shift+Enter` | 줄바꿈 |
+| `Enter` | 전송 |
+
+Ghostty의 `⌘D`, `⇧⌘D` 분할과 `⌘↑/↓`, `⇧⌘↑/↓` 프롬프트 점프는 꺼 둔다. Codex는 실행 시 키맵을 읽으므로 설정 변경 후 실행 중이던 세션은 `cr`로 다시 연다.
 
 ## 크롬 확장 tmux-tabs
 
