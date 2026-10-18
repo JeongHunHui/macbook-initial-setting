@@ -422,11 +422,6 @@ set -g prefix2 None #!important
 unbind C-a
 # Do not erase scrollback as a side effect of an editor shortcut.
 unbind -n C-l
-unbind -n M-a
-unbind -n M-s
-unbind -n M-w
-unbind -n M-z
-unbind -n M-1
 unbind -n M-c
 unbind -n M-Left
 unbind -n M-Right
@@ -436,6 +431,16 @@ unbind -n M-Down
 # Option+f/d = 다음/이전 window 이동
 bind -n M-f next-window
 bind -n M-d previous-window
+# Option+S = 좌우 pane 분할
+bind -n M-s split-window -h -c ~
+# Option+W = 현재 pane 닫기
+bind -n M-w kill-pane
+# Option+Z = pane 확대/복원
+bind -n M-z resize-pane -Z
+# Option+1 = 균등한 좌우 pane 배치
+bind -n M-1 select-layout even-horizontal
+# Option+A = 현재 pane을 새 window로 분리하고 이름 지정
+bind -n M-a command-prompt -p "window name:" "break-pane -n '%%'"
 
 # 윈도우 이름 자동 변경 끄기 (수동으로 설정한 이름 유지)
 set -g allow-rename off #!important

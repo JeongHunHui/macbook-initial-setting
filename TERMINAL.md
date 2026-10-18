@@ -27,7 +27,7 @@ bash ./dotfiles/install.sh
 
 ## tmux
 
-prefix 는 기본값 `C-b` 하나만 쓴다. prefix 없는 왼쪽 Option 단축키는 창 이동 두 개만 둔다.
+prefix 는 기본값 `C-b` 하나만 쓴다. 왼쪽 Option+D/F는 창 이동에 쓰고, Option+S/W/Z/1/A는 pane 분할·닫기·확대·배치·분리에 쓴다. 창 이동은 Option+D/F만 사용한다.
 
 `prefix2 None`을 명시해 재로드 때도 `Ctrl+A`를 입력기에 전달한다. 설정에서 옛 줄을 지우는 것만으로는 실행 중인 tmux의 보조 prefix가 꺼지지 않는다. `Ctrl+L`에 추가돼 있던 tmux 스크롤 기록 삭제도 해제한다.
 
@@ -55,6 +55,11 @@ prefix 는 기본값 `C-b` 하나만 쓴다. prefix 없는 왼쪽 Option 단축�
 | `` ` `` | 항상 | `non_us_backslash` |
 | 오른쪽 Shift | 항상 | fn |
 | 왼쪽 `⌥D/F` | Ghostty 에서 한글 입력 중 | 이전/다음 tmux 창으로 이동. 한글 입력기가 Option 키를 먹는 문제를 피한다 |
+| 왼쪽 `⌥S` | Ghostty 에서 한글 입력 중 | 좌우 pane 분할 |
+| 왼쪽 `⌥W` | Ghostty 에서 한글 입력 중 | 현재 pane 닫기 |
+| 왼쪽 `⌥Z` | Ghostty 에서 한글 입력 중 | pane 확대/복원 |
+| 왼쪽 `⌥1` | Ghostty 에서 한글 입력 중 | 균등한 좌우 pane 배치 |
+| 왼쪽 `⌥A` | Ghostty 에서 한글 입력 중 | 현재 pane을 이름 붙인 새 window로 분리 |
 | `⌥C` | 크롬 | 개발자 도구 (`⌘⌥I`) |
 | `⌥S` | 크롬 | 탭 분할 보기 (`⌘⌥N`) |
 | `⌥W` | 크롬 | 탭 닫기 (`⌘W`) |

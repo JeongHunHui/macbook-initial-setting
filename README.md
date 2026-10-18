@@ -50,6 +50,8 @@ MAC_INIT_MODULES="system,cli,terminal,codex,common" bash ./setup.sh
 - Codex `Enter`: 전송
 - Codex `Shift+Enter`: 줄바꿈
 - tmux `Option+D/F`: 이전/다음 window
+- tmux `Option+S`: 좌우 pane 분할 (Ghostty에서 한국어 입력 중)
+- tmux `Option+W/Z/1/A`: pane 닫기/확대·복원/균등 배치/pane을 이름 붙인 window로 분리
 - Codex `Cmd+왼쪽/오른쪽`: 입력 줄 시작/끝, `위/아래`: 여러 줄 커서 이동
 - tmux 마우스 클릭: pane 이동
 - tmux 드래그: 현재 pane 안에서 선택하고 macOS 클립보드로 복사
